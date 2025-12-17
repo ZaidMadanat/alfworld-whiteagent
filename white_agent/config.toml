@@ -1,0 +1,7 @@
+[agent]
+policy_type = "neural"
+model = "gpt-4o"
+
+[evaluation]
+episodes = 10
+max_steps = 50
