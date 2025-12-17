@@ -6,8 +6,10 @@ import sys
 
 from agentbeats.agent_executor import BeatsAgent
 from agentbeats import get_registered_tools
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from starlette.routing import Route
+from a2a.types import AgentCard
 
 
 def _import_tool_file(path: str):
@@ -30,32 +32,29 @@ class StatusBeatsAgent(BeatsAgent):
 
     def _make_app(self):
         super()._make_app()
+        # Allow cross-origin fetches of the agent card from the AgentBeats dashboard
+        self.app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
         @self.app.route("/status")
         async def _status(_request):
             return JSONResponse({"status": "ok"})
 
         def _card_payload():
-            """Return agent card with both camelCase and snake_case for compatibility."""
-            payload = dict(self.agent_card_json)
-            # Add snake_case mirrors expected by some consumers
-            if "defaultInputModes" in payload and "default_input_modes" not in payload:
-                payload["default_input_modes"] = payload["defaultInputModes"]
-            if "defaultOutputModes" in payload and "default_output_modes" not in payload:
-                payload["default_output_modes"] = payload["defaultOutputModes"]
-            if "preferredTransport" in payload and "preferred_transport" not in payload:
-                payload["preferred_transport"] = payload["preferredTransport"]
-            if "protocolVersion" in payload and "protocol_version" not in payload:
-                payload["protocol_version"] = payload["protocolVersion"]
-            if "supportsAuthenticatedExtendedCard" in payload and "supports_authenticated_extended_card" not in payload:
-                payload["supports_authenticated_extended_card"] = payload["supportsAuthenticatedExtendedCard"]
-            return payload
+            """Return the canonical AgentCard payload (no extra fields)."""
+            card = AgentCard(**self.agent_card_json)
+            return card.model_dump(by_alias=True, exclude_none=True)
 
         def _card_endpoint(_request):
             return JSONResponse(_card_payload())
 
         # Add extra aliases for card endpoints to satisfy different consumers.
         card_paths = [
+            "/",
             "/agent-card.json",
             "/agent-card",
             "/agent.json",

@@ -41,12 +41,12 @@ Obs: "The fridge 1 is open."
 Action: "put apple 1 in fridge 1"
 """
 
-url = "https://absorptiometric-lessie-jokily.ngrok-free.dev"
-host                = "0.0.0.0"
-port                = 8061
+url                 = "https://absorptiometric-lessie-jokily.ngrok-free.dev"
 version             = "1.0.0"
-defaultInputModes   = ["text"]
-defaultOutputModes  = ["text"]
+preferredTransport  = "JSONRPC"
+protocolVersion     = "0.3.0"
+defaultInputModes   = ["text/plain"]
+defaultOutputModes  = ["text/plain"]
 
 [capabilities]
 streaming           = true
