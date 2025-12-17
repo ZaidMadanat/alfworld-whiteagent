@@ -41,7 +41,7 @@ Obs: "The fridge 1 is open."
 Action: "put apple 1 in fridge 1"
 """
 
-url                 = "https://absorptiometric-lessie-jokily.ngrok-free.dev"
+url = "https://sublanate-basiliscine-rosaline.ngrok-free.dev"
 version             = "1.0.0"
 preferredTransport  = "JSONRPC"
 protocolVersion     = "0.3.0"

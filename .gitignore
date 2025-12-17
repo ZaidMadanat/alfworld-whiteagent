@@ -29,7 +29,8 @@ htmlcov/
 
 # Environment
 .env
-*.env
+!*.env.example
+*.env.local
 
 # Evaluation outputs
 evaluation_scores.csv
