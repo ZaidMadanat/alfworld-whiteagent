@@ -11,7 +11,7 @@ PORT=8061
 
 # Cleanup previous instances
 pkill -f "ngrok http $PORT"
-pkill -f "agentbeats run agents/white_agent_card.toml"
+pkill -f "run_agent_with_status.py"
 
 echo "Starting ngrok on port $PORT..."
 ngrok http $PORT --log=stdout > ngrok.log &
@@ -43,16 +43,13 @@ perl -pi -e "s|url\s*=\s*\".*\"|url = \"$PUBLIC_URL\"|g" agents/white_agent_card
 
 echo "Updated agents/white_agent_card.toml with public URL."
 
-# Start the agent using agentbeats standard runner
-# We configure it to use OpenAI GPT-4o as tested
+# Start the agent with a health endpoint for AgentBeats checks
 echo "Starting White Agent on port $PORT..."
-agentbeats run agents/white_agent_card.toml \
+python scripts/run_agent_with_status.py agents/white_agent_card.toml \
     --agent_host 0.0.0.0 \
     --agent_port $PORT \
     --model_type openai \
-    --model_name gpt-4o \
-    --launcher_host 127.0.0.1 \
-    --launcher_port 9000 &
+    --model_name gpt-4o &
 AGENT_PID=$!
 
 echo "Agent deployed at: $PUBLIC_URL"

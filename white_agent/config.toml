@@ -1,6 +1,7 @@
 [agent]
 policy_type = "neural"
 model = "gpt-4o"
+max_reflections = 3
 
 [evaluation]
 episodes = 10

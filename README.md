@@ -20,6 +20,8 @@ You can run the agent evaluation script:
 python scripts/evaluate_white_agent.py
 ```
 
+The agent keeps a tiny reflection buffer of recent lessons (success/fail cues and any evaluator feedback). Each new episode prepends those lessons to the prompt to encourage quick adaptation to the assessor’s scoring.
+
 ### AgentBeats Deployment
 To deploy with AgentBeats and ngrok:
 ```bash
