@@ -130,15 +130,23 @@ class WhiteAgent:
 
         last = traj[-1]
         reward = last.get("reward", 0.0)
+        cleanup_score = last.get("cleanup_score")
         done_flag = last.get("done", False)
         last_action = last.get("action", "unknown")
         last_obs = last.get("observation", "")
 
+        # Incorporate both normal score and cleanup score in reflection
+        score_info = f"Normal score: {reward}"
+        if cleanup_score is not None:
+            score_info += f", Cleanup score: {cleanup_score}"
+        
         if reward > 0:
-            return f"Success pattern: finishing with '{last_action}' after seeing '{last_obs}'."
+            if cleanup_score is not None and cleanup_score < 0.7:
+                return f"Task completed (normal score: {reward}) but low cleanup score ({cleanup_score}). Remember to close receptacles and maintain environment after task completion."
+            return f"Success pattern: finishing with '{last_action}' after seeing '{last_obs}' ({score_info})."
         if done_flag and reward <= 0:
-            return f"Failure to reach goal; last action '{last_action}' after '{last_obs}'. Try alternative paths and diversify exploration."
-        return f"Partial progress; last action '{last_action}'. Keep exploring and avoid repeating ineffective commands."
+            return f"Failure to reach goal; last action '{last_action}' after '{last_obs}' ({score_info}). Try alternative paths and diversify exploration."
+        return f"Partial progress; last action '{last_action}' ({score_info}). Keep exploring and avoid repeating ineffective commands."
 
     def _add_reflection(self, reflection: str):
         """Push a new reflection and keep only the most recent ones."""
@@ -154,6 +162,7 @@ class WhiteAgent:
         self.state["step"] = self.state.get("step", 0) + 1
         self.state["last_reward"] = reward
         self.state["done"] = done
+        cleanup_score = info.get("cleanup_score") if isinstance(info, dict) else None
         self.state.setdefault("trajectory", []).append(
             {
                 "observation": self.state.get("last_observation", ""),
@@ -161,12 +170,15 @@ class WhiteAgent:
                 "reward": reward,
                 "done": done,
                 "feedback": info.get("feedback") if isinstance(info, dict) else None,
+                "cleanup_score": cleanup_score,
             }
         )
         if done:
             reflection = self._summarize_trajectory()
             self._add_reflection(reflection)
-            end_msg = f"Episode finished. Reward: {reward}."
+            end_msg = f"Episode finished. Normal score (task completion): {reward}."
+            if cleanup_score is not None:
+                end_msg += f" Cleanup score: {cleanup_score}."
             if isinstance(info, dict) and info.get("feedback"):
                 end_msg += f" Evaluator feedback: {info['feedback']}"
             self.state.setdefault("history", []).append({"role": "user", "content": end_msg})
