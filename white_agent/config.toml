@@ -2,6 +2,7 @@
 policy_type = "neural"
 model = "gpt-4o"
 max_reflections = 3
+track_cleanup = true
 
 [evaluation]
 episodes = 10
